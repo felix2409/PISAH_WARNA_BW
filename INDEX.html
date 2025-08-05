@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pemisah PDF Warna vs Hitam-Putih</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center mb-6 text-gray-800">Pemisah PDF</h1>
+    
+    <form id="uploadForm" class="space-y-4" enctype="multipart/form-data">
+      <input type="file" name="file" accept="application/pdf" required 
+             class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
+      
+      <button type="submit" 
+              class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+        Proses PDF
+      </button>
+    </form>
+
+    <div id="progress" class="mt-4 hidden text-center text-sm text-gray-600">
+      Memproses PDF...
+    </div>
+
+    <div id="result" class="mt-4 hidden text-center">
+      <p class="text-green-600">Selesai!</p>
+      <a id="linkWarna" href="#" class="block mt-2 text-blue-600 underline">Download warna.pdf</a>
+      <a id="linkBW" href="#" class="block mt-1 text-blue-600 underline">Download hitamputih.pdf</a>
+    </div>
+
+    <div id="error" class="mt-4 hidden text-center text-red-600 text-sm"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const progress = document.getElementById('progress');
+    const result = document.getElementById('result');
+    const error = document.getElementById('error');
+    const linkWarna = document.getElementById('linkWarna');
+    const linkBW = document.getElementById('linkBW');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      progress.classList.remove('hidden');
+      result.classList.add('hidden');
+      error.classList.add('hidden');
+
+      const formData = new FormData(form);
+
+      try {
+        const res = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) throw new Error('Gagal memproses PDF');
+
+        const data = await res.json();
+
+        linkWarna.href = data.warna_url;
+        linkBW.href = data.bw_url;
+
+        result.classList.remove('hidden');
+      } catch (err) {
+        error.textContent = err.message;
+        error.classList.remove('hidden');
+      } finally {
+        progress.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
